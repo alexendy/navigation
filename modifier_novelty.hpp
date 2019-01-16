@@ -44,18 +44,19 @@ namespace sferes
 {
   namespace modif
   {
-    namespace novelty
-    {
+	namespace novelty
+	{
 
-      struct dist_t{
-	float dist;
-	int index;
-	bool operator<(const dist_t &disto) const {return dist<disto.dist;};
-      };
+	struct dist_t{
+	  float dist;
+	  int index;
+	  bool operator<(const dist_t &disto) const {return dist<disto.dist;};
+	};
 
-      template<typename Phen, typename Archive, typename Params>
-      struct _parallel_behavior_nov
-      {
+	template<typename Phen, typename Archive, typename Params>
+	
+	struct _parallel_behavior_nov
+	{
 	typedef typename std::vector<boost::shared_ptr<Phen> > pop_t;
 
 	pop_t _pop;
@@ -66,110 +67,106 @@ namespace sferes
 
 	void operator() (const parallel::range_t& r) const
 	{
+	for (size_t i = r.begin(); i != r.end(); ++i)
+	{
+		float sum=0.0;
+		float sum2 = 0.0;
+		std::vector<struct dist_t> v_dist;
 
-	  for (size_t i = r.begin(); i != r.end(); ++i)
-	    {
-	      float sum=0.0;
-	      float sum2 = 0.0;
-	      std::vector<struct dist_t> v_dist;
+		//Maximum archive size
+		int arsize=Params::novelty::max_archive_size;
+		if(_apop.size()<Params::novelty::max_archive_size)
+			arsize=_apop.size();
 
-	      //Maximum archive size
-	      int arsize=Params::novelty::max_archive_size;
-	      if(_apop.size()<Params::novelty::max_archive_size)
-		arsize=_apop.size();
-
-	      for (size_t j = 0; j < _pop.size() + arsize; ++j) {
-		float hd=1.0;
-		float hd2=1.0;
-    float delta=0;
-		if(i!=j) {
-		  if(j<_pop.size()) {
-            hd=0;
-            for (unsigned int k=0;k<_pop[i]->fit().pos_bd.size();k++) {
-              delta=_pop[i]->fit().pos_bd[k].get_x()-_pop[j]->fit().pos_bd[k].get_x();
-              delta*=delta;
-              hd+=delta;
-              delta=_pop[i]->fit().pos_bd[k].get_y()-_pop[j]->fit().pos_bd[k].get_y();
-              delta*=delta;
-              hd+=delta;
-            }
-            hd = ::sqrt(hd);
-		  }
-		  else {
-        hd=0;
-        for (unsigned int k=0;k<_pop[i]->fit().pos_bd.size();k++) {
-          delta=_pop[i]->fit().pos_bd[k].get_x()-_apop[j-_pop.size()-arsize+_apop.size()][k].get_x();
-          delta*=delta;
-          hd+=delta;
-          delta=_pop[i]->fit().pos_bd[k].get_y()-_apop[j-_pop.size()-arsize+_apop.size()][k].get_y();
-          delta*=delta;
-          hd+=delta;
-        }
-        hd = ::sqrt(hd);
-		  }
-
+		for (size_t j = 0; j < _pop.size() + arsize; ++j) {
+			float hd=1.0;
+			float hd2=1.0;
+			float delta=0;
+			if(i!=j) {
+				if(j<_pop.size()) {
+					hd=0;
+					for (unsigned int k=0;k<_pop[i]->fit().pos_bd.size();k++) {
+						delta=_pop[i]->fit().pos_bd[k].get_x()-_pop[j]->fit().pos_bd[k].get_x();
+						delta*=delta;
+						hd+=delta;
+						delta=_pop[i]->fit().pos_bd[k].get_y()-_pop[j]->fit().pos_bd[k].get_y();
+						delta*=delta;
+						hd+=delta;
+					}
+					hd = ::sqrt(hd);
+				} else {
+					hd=0;
+					for (unsigned int k=0;k<_pop[i]->fit().pos_bd.size();k++) {
+						delta=_pop[i]->fit().pos_bd[k].get_x()-_apop[j-_pop.size()-arsize+_apop.size()][k].get_x();
+						delta*=delta;
+						hd+=delta;
+						delta=_pop[i]->fit().pos_bd[k].get_y()-_apop[j-_pop.size()-arsize+_apop.size()][k].get_y();
+						delta*=delta;
+						hd+=delta;
+					}
+					hd = ::sqrt(hd);
+				}
+			}
+			struct dist_t dist_temp;
+			dist_temp.index=j;
+			dist_temp.dist=hd;
+			v_dist.push_back(dist_temp);
 		}
-		struct dist_t dist_temp;
-		dist_temp.index=j;
-		dist_temp.dist=hd;
-		v_dist.push_back(dist_temp);
+		//Sort the distance vector
+		sort(v_dist.begin(),v_dist.end());
 
-	      }
-	      //Sort the distance vector
-	      sort(v_dist.begin(),v_dist.end());
-
-	      //Get the sparsness with the k closest vectors
-	      float d = 0.0f;
-	      for(size_t j=0; j<Params::novelty::k; ++j)
-            d+=v_dist[j].dist;
-	      d /= (float)Params::novelty::k;
-	      int obj_num = 0;
-	      assert(obj_num<_pop[i]->fit().objs().size());
-	      _pop[i]->fit().set_obj(obj_num, d);
-	    }
+		//Get the sparsness with the k closest vectors
+		float d = 0.0f;
+		for(size_t j=0; j<Params::novelty::k; ++j)
+			d+=v_dist[j].dist;
+		d /= (float)Params::novelty::k;
+		int obj_num = 0;
+		assert(obj_num<_pop[i]->fit().objs().size());
+		_pop[i]->fit().set_obj(obj_num, d);
 	}
-      };
-    }
+	}
+	}; // struct _parallel_behavior_nov
+	}
 
-    SFERES_CLASS(BehaviorNov)
-    {
-    public:
+	SFERES_CLASS(BehaviorNov)
+	{
+	public:
 
-      template<typename Ea>
+	  template<typename Ea>
 	void apply(Ea& ea)
-      {
-        //std::cout<<"insidenov"<<std::endl;
-        // parallel compute
-        parallel::init();
-        parallel::p_for(parallel::range_t(0, ea.pop().size()),
-                        novelty::_parallel_behavior_nov<typename Ea::phen_t, archive_t, Params>(ea.pop(),_archive));
-        //std::cout<<"paralleldone"<<std::endl;
-        //Update archive
-        int obj_num = 0;
-        int bestindiv = -1;
-        float max_sparse = -1.0;
+	  {
+		//std::cout<<"insidenov"<<std::endl;
+		// parallel compute
+		parallel::init();
+		parallel::p_for(parallel::range_t(0, ea.pop().size()),
+						novelty::_parallel_behavior_nov<typename Ea::phen_t, archive_t, Params>(ea.pop(),_archive));
+		//std::cout<<"paralleldone"<<std::endl;
+		//Update archive
+		int obj_num = 0;
+		int bestindiv = -1;
+		float max_sparse = -1.0;
 
-        for(size_t i = 0; i < ea.pop().size(); ++i) {
-          float sparse = ea.pop()[i]->fit().obj(obj_num);
-          if(max_sparse < sparse) {
-            max_sparse =  sparse;
-            bestindiv = i;
-          }
-        }
-        if(bestindiv!=-1)
-          _archive.push_back(ea.pop()[bestindiv]->fit().pos_bd);
+		for(size_t i = 0; i < ea.pop().size(); ++i) {
+		  float sparse = ea.pop()[i]->fit().obj(obj_num);
+		  if(max_sparse < sparse) {
+			max_sparse =  sparse;
+			bestindiv = i;
+		  }
+		}
+		if(bestindiv!=-1)
+		  _archive.push_back(ea.pop()[bestindiv]->fit().pos_bd);
 
-      }
-      int _size() const {return _archive.size();}
-      float _prop_archive() const {return (float)_n_archive;}
+	  }
+	  int _size() const {return _archive.size();}
+	  float _prop_archive() const {return (float)_n_archive;}
 
-    protected:
-      typedef fastsim::Posture behavior_t;
-      typedef std::vector< std::vector<behavior_t> > archive_t;
+	protected:
+	  typedef fastsim::Posture behavior_t;
+	  typedef std::vector< std::vector<behavior_t> > archive_t;
 
-      archive_t _archive;
-      int _n_archive;
-    };
+	  archive_t _archive;
+	  int _n_archive;
+	};
   }
 }
 
