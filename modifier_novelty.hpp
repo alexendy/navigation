@@ -80,29 +80,48 @@ namespace sferes
 
 		for (size_t j = 0; j < _pop.size() + arsize; ++j) {
 			float hd=1.0;
-			float hd2=1.0;
 			float delta=0;
 			if(i!=j) {
 				if(j<_pop.size()) {
 					hd=0;
 					for (unsigned int k=0;k<_pop[i]->fit().pos_bd.size();k++) {
+#ifdef BD_THETA
+						delta = _pop[i]->fit().pos_bd[k].theta()-_pop[j]->fit().pos_bd[k].theta();
+						// Handle angle periodicity - initial bds are in [-M_PI,M_PI]
+						if(delta > M_PI)
+							delta -= 2*M_PI;
+						if(delta < M_PI)
+							delta += 2*M_PI;
+						delta*=delta;
+#else
 						delta=_pop[i]->fit().pos_bd[k].get_x()-_pop[j]->fit().pos_bd[k].get_x();
 						delta*=delta;
 						hd+=delta;
 						delta=_pop[i]->fit().pos_bd[k].get_y()-_pop[j]->fit().pos_bd[k].get_y();
 						delta*=delta;
 						hd+=delta;
+#endif
 					}
 					hd = ::sqrt(hd);
 				} else {
 					hd=0;
 					for (unsigned int k=0;k<_pop[i]->fit().pos_bd.size();k++) {
+#ifdef BD_THETA
+						delta = _pop[i]->fit().pos_bd[k].theta()-_apop[j-_pop.size()-arsize+_apop.size()][k].theta();
+						// Handle angle periodicity - initial bds are in [-M_PI,M_PI]
+						if(delta > M_PI)
+							delta -= 2*M_PI;
+						if(delta < M_PI)
+							delta += 2*M_PI;
+						delta*=delta;
+#else
 						delta=_pop[i]->fit().pos_bd[k].get_x()-_apop[j-_pop.size()-arsize+_apop.size()][k].get_x();
 						delta*=delta;
 						hd+=delta;
 						delta=_pop[i]->fit().pos_bd[k].get_y()-_apop[j-_pop.size()-arsize+_apop.size()][k].get_y();
 						delta*=delta;
 						hd+=delta;
+#endif
 					}
 					hd = ::sqrt(hd);
 				}
