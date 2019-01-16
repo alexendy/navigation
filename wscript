@@ -32,7 +32,7 @@ def build(bld):
     sferes.create_variants(bld,
 		source='maze_navigation.cpp',
                 use = 'sferes2 fastsim',
-                uselib = 'EIGEN SDL BOOST BOOST_GRAPH BOOST_THREAD TBB',
+                uselib = 'EIGEN SDL BOOST BOOST_GRAPH BOOST_THREAD PTHREAD TBB',
                 target = 'maze_navigation',
                 cxxflags = bld.get_env()['CXXFLAGS'] + ['-Wno-unknown-pragmas'],
                 variants = [
