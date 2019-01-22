@@ -90,7 +90,7 @@ namespace sferes
 						// Handle angle periodicity - initial bds are in [-M_PI,M_PI]
 						if(delta > M_PI)
 							delta -= 2*M_PI;
-						if(delta < M_PI)
+						if(delta < -M_PI)
 							delta += 2*M_PI;
 						delta*=delta;
 #else
@@ -111,7 +111,7 @@ namespace sferes
 						// Handle angle periodicity - initial bds are in [-M_PI,M_PI]
 						if(delta > M_PI)
 							delta -= 2*M_PI;
-						if(delta < M_PI)
+						if(delta < -M_PI)
 							delta += 2*M_PI;
 						delta*=delta;
 #else
