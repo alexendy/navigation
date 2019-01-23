@@ -99,8 +99,8 @@ namespace sferes
 						hd+=delta;
 						delta=_pop[i]->fit().pos_bd[k].get_y()-_pop[j]->fit().pos_bd[k].get_y();
 						delta*=delta;
-						hd+=delta;
 #endif
+						hd+=delta;
 					}
 					hd = ::sqrt(hd);
 				} else {
@@ -120,8 +120,8 @@ namespace sferes
 						hd+=delta;
 						delta=_pop[i]->fit().pos_bd[k].get_y()-_apop[j-_pop.size()-arsize+_apop.size()][k].get_y();
 						delta*=delta;
-						hd+=delta;
 #endif
+						hd+=delta;
 					}
 					hd = ::sqrt(hd);
 				}
