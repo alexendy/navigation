@@ -161,6 +161,24 @@ namespace sferes
 						novelty::_parallel_behavior_nov<typename Ea::phen_t, archive_t, Params>(ea.pop(),_archive));
 		//std::cout<<"paralleldone"<<std::endl;
 		//Update archive
+
+		// Hack to extract initial pop bd
+		if(ea.gen() == 0)
+		{
+			std::ostringstream ofbd_name;
+			ofbd_name<<ea.res_dir()<<"/initial_pop_bd.log";
+			std::ofstream outbd(ofbd_name.str());
+			for (size_t i = 0; i < ea.pop().size(); i++) {
+				for (int j=0;j<ea.pop()[i]->fit().pos_bd.size();j++) {
+					outbd<< ea.pop()[i]->fit().pos_bd[j].x()<<" ";
+					outbd<< ea.pop()[i]->fit().pos_bd[j].y()<<" ";
+					outbd<< ea.pop()[i]->fit().pos_bd[j].theta()<<" ";
+				}
+				outbd<<std::endl;	    
+			}
+			outbd.close();
+		}
+
 		int obj_num = 0;
 		int bestindiv = -1;
 		float max_sparse = -1.0;

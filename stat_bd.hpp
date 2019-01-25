@@ -16,7 +16,9 @@ namespace sferes
       template<typename E>
 	void refresh(const E& ea)
       {
-
+	/* WARNING: Since this is not called during the pop init, bd_000000.txt is actually
+	   for gen 1 (and bd_000001 for gen 2, etc.)
+	   TODO: Fix that*/
 	static int bd_id=0;
 	std::ostringstream ofbd_name;
 	ofbd_name<<ea.res_dir()<<"/bd_"<<std::setfill('0')<<std::setw(6)<<bd_id<<".log";
